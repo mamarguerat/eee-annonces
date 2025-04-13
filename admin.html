@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Contrôle Présentation</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, 100px); gap: 10px; }
+    .grid canvas { width: 100px; height: auto; cursor: pointer; border: 1px solid #ccc; }
+    button { margin: 5px; padding: 10px; }
+    .controls { margin-bottom: 20px; }
+    #preview { border: 2px solid black; margin-top: 20px; width: 100%; max-height: 400px; }
+  </style>
+</head>
+<body>
+  <h1>Contrôle de la Présentation</h1>
+  <div class="controls">
+    <label for="monitor">Sélectionner écran:</label>
+    <select id="monitor"></select>
+    <button onclick="initPresentation()">Initialiser Présentation</button>
+    <button onclick="toggleOnAir()">Basculer On-Air</button>
+    <button onclick="previous()">Précédent</button>
+    <button onclick="next()">Suivant</button>
+    <button onclick="autoFlip()">Lecture Auto</button>
+    <button onclick="stopAutoFlip()">Arrêter Auto</button>
+    <input id="delay" type="number" placeholder="Délai (ms)" value="5000" />
+  </div>
+  <h2>Pages</h2>
+  <div class="grid" id="grid"></div>
+  <h2>Prévisualisation</h2>
+  <canvas id="preview"></canvas>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+  <script>
+    let onAir = false;
+    const grid = document.getElementById('grid');
+    const preview = document.getElementById('preview');
+    const monitorSelect = document.getElementById('monitor');
+    const url = 'https://eglise-evangelique-estavayer.ch/wp-content/themes/kadence-eee/tmp/file.pdf';
+    let selectedMonitor = 0;
+
+    const loadMonitors = async () => {
+      const displays = await window.electronAPI.getDisplays();
+      console.log('Displays:', displays); // Debugging line
+      displays.forEach(({ id, label }) => {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = label;
+        monitorSelect.appendChild(option);
+      });
+    };
+
+    window.electronAPI.onDisplaysUpdated = (displays) => {
+      monitorSelect.innerHTML = ''; // Clear existing options
+      displays.forEach(({ id, label }) => {
+        const option = document.createElement('option');
+        option.value = id;
+        option.textContent = label;
+        monitorSelect.appendChild(option);
+      });
+    };
+
+    monitorSelect.addEventListener('change', () => {
+      selectedMonitor = parseInt(monitorSelect.value, 10);
+    });
+
+    function initPresentation() {
+      window.electronAPI.createMainWindow(selectedMonitor);
+    }
+
+    function toggleOnAir() {
+      onAir = !onAir;
+      window.electronAPI.toggleOnAir(onAir);
+      if (!onAir) {
+        alert('La présentation a été fermée.');
+      }
+    }
+
+    function previous() {
+      window.electronAPI.navigate('prev');
+    }
+
+    function next() {
+      window.electronAPI.navigate('next');
+    }
+
+    function autoFlip() {
+      const delay = parseInt(document.getElementById('delay').value, 10);
+      window.electronAPI.autoFlip(delay);
+    }
+
+    function stopAutoFlip() {
+      window.electronAPI.stopAutoFlip();
+    }
+
+    const ctxPreview = preview.getContext('2d');
+    pdfjsLib.getDocument(url).promise.then(doc => {
+      for (let i = 1; i <= doc.numPages; i++) {
+        doc.getPage(i).then(page => {
+          const viewport = page.getViewport({ scale: 1 }); // Higher scale for better clarity
+          const canvas = document.createElement('canvas');
+          const context = canvas.getContext('2d');
+          canvas.height = viewport.height;
+          canvas.width = viewport.width;
+
+          page.render({ canvasContext: context, viewport: viewport }).promise.then(() => {
+            canvas.onclick = () => {
+              window.electronAPI.goToPage(i - 1);
+              preview.width = canvas.width;
+              preview.height = canvas.height;
+              ctxPreview.clearRect(0, 0, preview.width, preview.height);
+              ctxPreview.drawImage(canvas, 0, 0);
+            };
+            grid.appendChild(canvas);
+          });
+        });
+      }
+    });
+
+    window.onload = () => {
+      loadMonitors();
+    };
+  </script>
+</body>
+</html>

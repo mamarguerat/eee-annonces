@@ -1,0 +1,14 @@
+{
+  "name": "eee-annonces",
+  "version": "1.0.0",
+  "description": "Logiciel permettant de diffuser les annonces lors des culte à l'Eglise Evangélique d'Estavayer",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "author": "Martin Marguerat",
+  "license": "Apache-2.0",
+  "devDependencies": {
+    "electron": "^35.1.5"
+  }
+}

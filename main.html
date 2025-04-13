@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Présentation</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: black;
+      overflow: hidden;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    canvas {
+      max-width: 100%;
+      max-height: 100%;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="presentation"></canvas>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+  <script>
+    const url = 'https://eglise-evangelique-estavayer.ch/wp-content/themes/kadence-eee/tmp/file.pdf';
+    const canvas = document.getElementById('presentation');
+    const ctx = canvas.getContext('2d');
+
+    let pdfDoc = null;
+    let currentPage = 0;
+    let autoFlipInterval = null;
+
+    const renderPage = (num) => {
+      pdfDoc.getPage(num + 1).then(page => {
+        const viewport = page.getViewport({ scale: 1 }); // Base scale
+        const scale = Math.min(
+          window.innerWidth / viewport.width,
+          window.innerHeight / viewport.height
+        );
+        const scaledViewport = page.getViewport({ scale });
+
+        canvas.width = scaledViewport.width;
+        canvas.height = scaledViewport.height;
+
+        const renderContext = {
+          canvasContext: ctx,
+          viewport: scaledViewport
+        };
+        page.render(renderContext);
+      });
+    };
+
+    pdfjsLib.getDocument(url).promise.then(doc => {
+      pdfDoc = doc;
+      renderPage(currentPage);
+    });
+
+    window.electronAPI.onNavigate(dir => {
+      if (!pdfDoc) return;
+      if (dir === 'next' && currentPage < pdfDoc.numPages - 1) {
+        currentPage++;
+      } else if (dir === 'prev' && currentPage > 0) {
+        currentPage--;
+      }
+      renderPage(currentPage);
+    });
+
+    window.electronAPI.onGoToPage(index => {
+      if (!pdfDoc) return;
+      currentPage = index;
+      renderPage(currentPage);
+    });
+
+    window.electronAPI.onAutoFlip(delay => {
+      clearInterval(autoFlipInterval);
+      autoFlipInterval = setInterval(() => {
+        if (currentPage < pdfDoc.numPages - 1) {
+          currentPage++;
+          renderPage(currentPage);
+        } else {
+          clearInterval(autoFlipInterval);
+        }
+      }, delay);
+    });
+
+    window.electronAPI.onStopAutoFlip(() => {
+      clearInterval(autoFlipInterval);
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        window.electronAPI.toggleOnAir(false); // Close the presentation
+      }
+    });
+  </script>
+</body>
+</html>
