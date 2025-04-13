@@ -15,41 +15,78 @@
       align-items: center;
     }
     canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
       max-width: 100%;
       max-height: 100%;
+      transition: opacity 0.5s ease-in-out; /* Crossfade effect */
+      opacity: 0; /* Start hidden */
+      z-index: 0;
+    }
+
+    #presentation1 {
+      opacity: 1; /* Start with the first canvas visible */
+      z-index: 1;
+    }
+
+    #presentation2 {
+      position: absolute;
+      top: 0;
+      left: 0;
     }
   </style>
 </head>
 <body>
-  <canvas id="presentation"></canvas>
+  <canvas id="presentation1"></canvas>
+  <canvas id="presentation2" style="position: absolute; top: 0; left: 0;"></canvas>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
   <script>
     const url = 'https://eglise-evangelique-estavayer.ch/wp-content/themes/kadence-eee/tmp/file.pdf';
-    const canvas = document.getElementById('presentation');
-    const ctx = canvas.getContext('2d');
+    const canvas1 = document.getElementById('presentation1');
+    const canvas2 = document.getElementById('presentation2');
+    const ctx1 = canvas1.getContext('2d');
+    const ctx2 = canvas2.getContext('2d');
 
     let pdfDoc = null;
     let currentPage = 0;
     let autoFlipInterval = null;
+    let activeCanvas = canvas1;
 
     const renderPage = (num) => {
+      const inactiveCanvas = activeCanvas === canvas1 ? canvas2 : canvas1;
+      const inactiveCtx = activeCanvas === canvas1 ? ctx2 : ctx1;
+
       pdfDoc.getPage(num + 1).then(page => {
-        const viewport = page.getViewport({ scale: 1 }); // Base scale
+        const viewport = page.getViewport({ scale: 1 });
         const scale = Math.min(
           window.innerWidth / viewport.width,
           window.innerHeight / viewport.height
         );
         const scaledViewport = page.getViewport({ scale });
 
-        canvas.width = scaledViewport.width;
-        canvas.height = scaledViewport.height;
+        inactiveCanvas.width = scaledViewport.width;
+        inactiveCanvas.height = scaledViewport.height;
 
         const renderContext = {
-          canvasContext: ctx,
+          canvasContext: inactiveCtx,
           viewport: scaledViewport
         };
-        page.render(renderContext);
+
+        // Render the new page on the inactive canvas
+        page.render(renderContext).promise.then(() => {
+          // Crossfade effect
+          inactiveCanvas.style.opacity = 1;
+          activeCanvas.style.opacity = 0;
+
+          // Swap active and inactive canvases after the transition
+          setTimeout(() => {
+            activeCanvas.style.zIndex = 0;
+            inactiveCanvas.style.zIndex = 1;
+            activeCanvas = inactiveCanvas;
+          }, 500); // Match the CSS transition duration
+        });
       });
     };
 
