@@ -1,6 +1,6 @@
 {
   "name": "eee-annonces",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "Logiciel permettant de diffuser les annonces lors des culte à l'Eglise Evangélique d'Estavayer",
   "main": "main.js",
   "scripts": {
