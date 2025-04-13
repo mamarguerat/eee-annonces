@@ -9,9 +9,7 @@
   "author": "Martin Marguerat",
   "license": "Apache-2.0",
   "devDependencies": {
-    "electron": "^35.1.5"
-  },
-  "dependencies": {
+    "electron": "^35.1.5",
     "electron-builder": "^26.0.12"
   }
 }
