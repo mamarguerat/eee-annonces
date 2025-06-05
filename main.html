@@ -39,7 +39,7 @@
 </head>
 <body>
   <canvas id="presentation1"></canvas>
-  <canvas id="presentation2" style="position: absolute; top: 0; left: 0;"></canvas>
+  <canvas id="presentation2"></canvas>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
   <script>
@@ -51,7 +51,6 @@
 
     let pdfDoc = null;
     let currentPage = 0;
-    let autoFlipInterval = null;
     let activeCanvas = canvas1;
 
     const renderPage = (num) => {
@@ -109,22 +108,6 @@
       if (!pdfDoc) return;
       currentPage = index;
       renderPage(currentPage);
-    });
-
-    window.electronAPI.onAutoFlip(delay => {
-      clearInterval(autoFlipInterval);
-      autoFlipInterval = setInterval(() => {
-        if (currentPage < pdfDoc.numPages - 1) {
-          currentPage++;
-          renderPage(currentPage);
-        } else {
-          clearInterval(autoFlipInterval);
-        }
-      }, delay);
-    });
-
-    window.electronAPI.onStopAutoFlip(() => {
-      clearInterval(autoFlipInterval);
     });
 
     document.addEventListener('keydown', (event) => {
