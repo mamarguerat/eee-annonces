@@ -40,6 +40,7 @@
 <body>
   <canvas id="presentation1"></canvas>
   <canvas id="presentation2"></canvas>
+  <div id="blackout" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:black;z-index:1000;"></div>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
   <script>
@@ -91,29 +92,17 @@
 
     pdfjsLib.getDocument(url).promise.then(doc => {
       pdfDoc = doc;
-      renderPage(currentPage);
-    });
-
-    window.electronAPI.onNavigate(dir => {
-      if (!pdfDoc) return;
-      if (dir === 'next' && currentPage < pdfDoc.numPages - 1) {
-        currentPage++;
-      } else if (dir === 'prev' && currentPage > 0) {
-        currentPage--;
-      }
-      renderPage(currentPage);
     });
 
     window.electronAPI.onGoToPage(index => {
       if (!pdfDoc) return;
-      currentPage = index;
-      renderPage(currentPage);
+      renderPage(index);
     });
 
-    document.addEventListener('keydown', (event) => {
-      if (event.key === 'Escape') {
-        window.electronAPI.toggleOnAir(false); // Close the presentation
-      }
+    window.electronAPI.onToggleBlackout(state => {
+      const blackout = document.getElementById('blackout');
+      console.log('Blackout state:', state);
+      blackout.style.display = state ? 'block' : 'none';
     });
   </script>
 </body>
