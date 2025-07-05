@@ -1,7 +1,7 @@
 const { app, BrowserWindow, ipcMain, screen } = require('electron')
 const path = require('path')
 
-let mainWindow, adminWindow
+let mainWindow, adminWindow;
 
 function createWindows() {
   adminWindow = new BrowserWindow({
@@ -11,10 +11,17 @@ function createWindows() {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
       nodeIntegration: false
-    }
+    },
+    icon: '/images/icon.png'
   })
 
   adminWindow.loadFile('admin.html')
+
+  adminWindow.on('closed', () => {
+    if (!mainWindow) return
+    mainWindow.close();
+    mainWindow = null; // Reset the reference
+  });
 
   // Handle monitor detection and listing
   ipcMain.handle('get-displays', () => {
@@ -59,39 +66,42 @@ function createWindows() {
       },
       show: false,
       alwaysOnTop: true,
-      focusable: false
+      //focusable: false,
+      icon: '/images/icon.png'
     })
 
     mainWindow.loadFile('main.html')
-
-    ipcMain.on('navigate', (e, direction) => {
-      mainWindow.webContents.send('navigate', direction)
-    })
-
-    ipcMain.on('go-to-page', (e, index) => {
-      mainWindow.webContents.send('go-to-page', index)
-    })
-
-    ipcMain.on('toggle-on-air', (e, state) => {
-      if (state) {
-        if (mainWindow) mainWindow.show();
-      } else {
-        if (mainWindow) {
-          mainWindow.close();
-          mainWindow = null; // Reset the reference
-        }
-      }
-    })
-
-    ipcMain.on('auto-flip', (e, delay) => {
-      mainWindow.webContents.send('auto-flip', delay)
-    })
-
-    ipcMain.on('stop-auto-flip', () => {
-      mainWindow.webContents.send('stop-auto-flip')
-    })
   })
 }
+
+ipcMain.on('go-to-page', (e, index) => {
+  if (mainWindow) mainWindow.webContents.send('go-to-page', index);
+});
+
+ipcMain.on('toggle-on-air', (e, state) => {
+  if (state) {
+    if (mainWindow) mainWindow.show();
+  } else {
+    if (mainWindow) {
+      mainWindow.close();
+      mainWindow = null;
+    }
+  }
+});
+
+ipcMain.on('toggle-blackout', (e, state) => {
+  if (mainWindow) {
+    mainWindow.webContents.send('toggle-blackout', state);
+  }
+});
+
+ipcMain.on('auto-flip', (e, delay) => {
+  if (mainWindow) mainWindow.webContents.send('auto-flip', delay);
+});
+
+ipcMain.on('stop-auto-flip', () => {
+  if (mainWindow) mainWindow.webContents.send('stop-auto-flip');
+});
 
 app.whenReady().then(createWindows)
 

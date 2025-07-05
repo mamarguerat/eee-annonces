@@ -4,25 +4,34 @@
   <meta charset="UTF-8">
   <title>Contrôle Présentation</title>
   <style>
+    html,
+    body{
+      width: 100%;
+      height: 100vh;
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+    }
+
     body {
       font-family: sans-serif;
-      padding: 20px;
       background-color: black;
       color: white;
-      padding: 0px;
-      margin: 10px;
+    }
+
+    .main {
+      position: relative;
+      height: 100vh;
       width: 100%;
-      height: 100%;
-      min-width: 100%;
       max-width: 100%;
-      min-height: 100%;
-      max-height: 100%;
+      padding: 20px;
     }
 
     .flex-container {
       display: flex;
       gap: 20px; /* Add spacing between rows */
       width: 100%; /* Full width */
+      height: calc(100vh - 60px);
     }
 
     .preview-container {
@@ -31,11 +40,11 @@
       aspect-ratio: 16 / 9;
       border: 2px solid black;
       overflow: hidden;
+      padding: 10px;
     }
 
     .preview {
       position: absolute;
-      top: 0;
       left: 0;
       width: 100%;
       transition: opacity 0.5s ease-in-out; /* Crossfade effect */
@@ -49,7 +58,7 @@
     }
 
     .grid-container {
-      flex: 1; /* Take up one part of the available space */
+      flex: 2; /* Take up one part of the available space */
       overflow-y: auto; /* Enable vertical scrolling */
       border: 2px solid black;
       padding: 10px;
@@ -69,7 +78,7 @@
       border: 1px solid #ccc;
     }
 
-    button {
+    button, select {
       background-color: #00A5AE;
       color: white;
       border: none;
@@ -77,31 +86,147 @@
       padding: 5px 15px;
       margin: 5px;
     }
+
+    #monitor {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      font-weight: bold;
+      font-size: 1em;
+      background-color: #000;
+      color: #00A5AE;
+      border-radius: 5px;
+      border: 2px solid #00A5AE;
+      height: 40px;
+      width: 250px;
+    }
+
+    .controls {
+      margin: 50px 0px;
+    }
+
+    .auto-btn {
+      position: absolute;
+      top: 20px;
+      left: 290px;
+      width: 40px;
+      height: 40px;
+      font-weight: bold;
+      font-size: 1.2em;
+      padding: 0;
+      text-align: center;
+      transition: background 0.2s, color 0.2s;
+    }
+    .disabled-auto {
+      background: #ccc;
+      color: #444;
+      content: "⏸";
+    }
+    .disabled-auto:hover {
+      background: #000;
+      color: #00A5AE;
+      border: 2px solid #00A5AE;
+      content: "⏵";
+    }
+    .enabled-auto {
+      background: #00A5AE;
+      color: #fff;
+      content: "⏵";
+    }
+    .enabled-auto:hover {
+      background: #000;
+      color: #00A5AE;
+      border: 2px solid #00A5AE;
+      content: "⏸";
+    }
+
+    .blackout-btn {
+      position: absolute;
+      top: 20px;
+      right: 300px;
+      width: 220px;
+      height: 40px;
+      font-weight: bold;
+      font-size: 1.2em;
+      transition: background 0.2s, color 0.2s;
+    }
+    .blackout {
+      background: #ccc;
+      color: #444;
+    }
+    .blackout:hover {
+      background: #000;
+      color: #ccc;
+      border: 2px solid #ccc;
+    }
+    .blackedout {
+      background: #444;
+      color: #ccc;
+    }
+    .blackedout:hover {
+      background: #ccc;
+      color: #444;
+      border: 2px solid #444;
+    }
+
+    .onair-btn {
+      border: none;
+      border-radius: 5px;
+      padding: 5px 15px;
+      margin: 5px;
+      font-weight: bold;
+      font-size: 1.2em;
+      transition: background 0.2s, color 0.2s;
+      cursor: pointer;
+      width: 220px;
+      height: 40px;
+      position: absolute;
+      top: 20px;
+      right: 60px;
+    }
+    .off-air {
+      background: #444;
+      color: #ccc;
+    }
+    .off-air:hover {
+      background: #000;
+      color: #c00;
+      border: 2px solid #c00;
+      content: "Projeter";
+    }
+    .on-air {
+      background: #c00;
+      color: #fff;
+    }
+    .on-air:hover {
+      background: #000;
+      color: #c00;
+      border: 2px solid #c00;
+    }
   </style>
 </head>
 <body>
-  <h1>Contrôle de la Présentation</h1>
-  <div class="controls">
-    <label for="monitor">Sélectionner écran:</label>
-    <select id="monitor"></select>
-    <button onclick="initPresentation()">Initialiser Présentation</button>
-    <button onclick="toggleOnAir()">Basculer On-Air</button>
-    <button onclick="previous()">Précédent</button>
-    <button onclick="next()">Suivant</button>
-    <button onclick="autoFlip()">Lecture Auto</button>
-    <button onclick="stopAutoFlip()" style="display: none;">Arrêter Auto</button>
-    <input id="delay" type="number" placeholder="Délai (ms)" value="5000" style="display: none;" />
-  </div>
-
-  <div class="flex-container">
-    <div class="preview-container">
-      <canvas id="preview1" class="preview"></canvas>
-      <canvas id="preview2" class="preview"></canvas>
+  <div class="main">
+    <div class="controls">
+      <select id="monitor"></select>
+      <button id="onair-btn" class="onair-btn off-air">Off Air</button>
+      <button id="blackout-btn" class="blackout-btn blackout">Écran noir</button>
+      <!--<button onclick="previous()">Précédent</button>
+      <button onclick="next()">Suivant</button>-->
+      <button id="auto-btn" class="auto-btn disabled-auto">⏸</button>
     </div>
 
-    <div class="grid-container">
-      <h2>Pages</h2>
-      <div class="grid" id="grid"></div>
+    <div class="flex-container">
+      <div class="preview-container">
+        <h2>Preview</h2>
+        <canvas id="preview1" class="preview"></canvas>
+        <canvas id="preview2" class="preview"></canvas>
+      </div>
+
+      <div class="grid-container">
+        <h2>Pages</h2>
+        <div class="grid" id="grid"></div>
+      </div>
     </div>
   </div>
 
@@ -109,10 +234,13 @@
   <script>
     // JavaScript logic remains unchanged
     let onAir = false;
+    let blackout = false;
+    const onAirBtn = document.getElementById('onair-btn');
+    const blackoutBtn = document.getElementById('blackout-btn');
+    const autoBtn = document.getElementById('auto-btn');
     const grid = document.getElementById('grid');
     const monitorSelect = document.getElementById('monitor');
     const url = 'https://eglise-evangelique-estavayer.ch/wp-content/themes/kadence-eee/tmp/file.pdf';
-    let selectedMonitor = 0;
 
     const preview1 = document.getElementById('preview1');
     const preview2 = document.getElementById('preview2');
@@ -153,6 +281,8 @@
         option.textContent = label;
         monitorSelect.appendChild(option);
       });
+      // Set default to last monitor
+      monitorSelect.value = displays[displays.length - 1].id;
     };
 
     window.electronAPI.onDisplaysUpdated = (displays) => {
@@ -165,19 +295,41 @@
       });
     };
 
-    monitorSelect.addEventListener('change', () => {
-      selectedMonitor = parseInt(monitorSelect.value, 10);
-    });
-
-    function initPresentation() {
-      window.electronAPI.createMainWindow(selectedMonitor);
-    }
-
     function toggleOnAir() {
       onAir = !onAir;
       window.electronAPI.toggleOnAir(onAir);
-      if (!onAir) {
-        alert('La présentation a été fermée.');
+      if (onAir) {
+        window.electronAPI.createMainWindow(parseInt(monitorSelect.value, 10));
+        setTimeout(function () {
+          window.electronAPI.goToPage(currentPage);
+        }, 500);
+      }  
+      else {
+        // alert('La présentation a été fermée.');
+      }
+    }
+
+    function updateOnAirButton() {
+      if (onAir) {
+        onAirBtn.textContent = 'On Air';
+        onAirBtn.classList.remove('off-air');
+        onAirBtn.classList.add('on-air');
+      } else {
+        onAirBtn.textContent = 'Off Air';
+        onAirBtn.classList.remove('on-air');
+        onAirBtn.classList.add('off-air');
+      }
+    }
+
+    function updateBlackoutButton() {
+      if (blackout) {
+        blackoutBtn.textContent = "Enlever l'écran noir";
+        blackoutBtn.classList.remove('blackout');
+        blackoutBtn.classList.add('blackedout');
+      } else {
+        blackoutBtn.textContent = "Écran noir";
+        blackoutBtn.classList.remove('blackedout');
+        blackoutBtn.classList.add('blackout');
       }
     }
 
@@ -185,9 +337,7 @@
       pdfjsLib.getDocument(url).promise.then(doc => {
         currentPage--;
         if (currentPage < 0) {
-          currentPage = 0;
-          // TODO: bug: does not work
-          currentpage = doc.numPages - 1;
+          currentPage = doc.numPages - 1;
         }
         window.electronAPI.goToPage(currentPage);
         doc.getPage(currentPage + 1).then(page => {
@@ -204,33 +354,113 @@
         }
         window.electronAPI.goToPage(currentPage);
         doc.getPage(currentPage + 1).then(page => {
-        renderPreview(page);
+          renderPreview(page);
         });
       });
     }
 
     function autoFlip() {
-      const delay = parseInt(document.getElementById('delay').value, 10);
       clearInterval(autoFlipInterval);
       autoFlipInterval = setInterval(() => {
         next();
-      }, delay);
+      }, 10000);
       document.querySelector('button[onclick="stopAutoFlip()"]').style.display = 'inline';
       document.querySelector('button[onclick="autoFlip()"]').style.display = 'none';
-      document.getElementById('delay').style.display = 'inline';
     }
 
     function stopAutoFlip() {
       clearInterval(autoFlipInterval);
       document.querySelector('button[onclick="stopAutoFlip()"]').style.display = 'none';
       document.querySelector('button[onclick="autoFlip()"]').style.display = 'inline';
-      document.getElementById('delay').style.display = 'none';
     }
+
+    // Gestion du hover dynamique
+    onAirBtn.addEventListener('mouseenter', () => {
+      if (onAir) {
+        onAirBtn.textContent = 'Arrêter la projection';
+      } else {
+        onAirBtn.textContent = 'Projeter';
+      }
+    });
+    onAirBtn.addEventListener('mouseleave', () => {
+      updateOnAirButton();
+      onAirBtn.style.color = ''; // reset color if needed
+    });
+
+    // Clic sur le bouton
+    onAirBtn.addEventListener('click', () => {
+      onAir = !onAir;
+      blackout = false;
+      window.electronAPI.toggleOnAir(onAir);
+      if (onAir) {
+        window.electronAPI.createMainWindow(parseInt(monitorSelect.value, 10));
+        setTimeout(function () {
+          window.electronAPI.goToPage(currentPage);
+        }, 500);
+      }
+      updateOnAirButton();
+      updateBlackoutButton();
+    });
+
+    autoBtn.addEventListener('mouseenter', () => {
+      if (autoBtn.classList.contains('disabled-auto')) {
+        autoBtn.textContent = '⏵';
+      } else {
+        autoBtn.textContent = '⏸';
+      }
+    });
+    autoBtn.addEventListener('mouseleave', () => {
+      if (autoBtn.classList.contains('disabled-auto')) {
+        autoBtn.textContent = '⏸';
+      } else {
+        autoBtn.textContent = '⏵';
+      }
+    });
+    autoBtn.addEventListener('click', () => {
+      if (autoBtn.classList.contains('disabled-auto')) {
+        autoBtn.classList.remove('disabled-auto');
+        autoBtn.classList.add('enabled-auto');
+        autoFlip();
+      } else {
+        autoBtn.classList.remove('enabled-auto');
+        autoBtn.classList.add('disabled-auto');
+        stopAutoFlip();
+      }
+    });
+    
+    blackoutBtn.addEventListener('click', () => {
+      if (onAir) {
+        blackout = !blackout;
+        window.electronAPI.toggleBlackout(blackout);
+        updateBlackoutButton();
+      }
+    });
+
+    document.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') {
+        if (onAir) {
+          onAir = false;
+          blackout = false;
+          window.electronAPI.toggleOnAir(onAir);
+          window.electronAPI.toggleBlackout(blackout);
+          updateOnAirButton();
+          updateBlackoutButton();
+        }
+      } else if (event.key === 'ArrowRight' || event.key === ' ' || event.key === 'PageDown') {
+        next();
+      } else if (event.key === 'ArrowLeft' || event.key === 'Backspace' || event.key === 'PageUp') {
+        previous();
+      } else if (event.key === 'n') {
+        blackout = !blackout;
+        window.electronAPI.toggleBlackout(blackout);
+        updateBlackoutButton();
+      }
+    });
 
     pdfjsLib.getDocument(url).promise.then(doc => {
       for (let i = 1; i <= doc.numPages; i++) {
         doc.getPage(i).then(page => {
-          const viewport = page.getViewport({ scale: 1 }); // Higher scale for better clarity
+          const viewport = page.getViewport({ scale: 1.5 }); // Higher scale for better clarity
           const canvas = document.createElement('canvas');
           const context = canvas.getContext('2d');
           canvas.height = viewport.height;
@@ -250,6 +480,13 @@
 
     window.onload = () => {
       loadMonitors();
+      currentPage = 0; // Start at the first page
+      pdfjsLib.getDocument(url).promise.then(doc => {
+        doc.getPage(currentPage + 1).then(page => {
+          renderPreview(page);
+        });
+      });
+      updateOnAirButton();
     };
   </script>
 </body>
