@@ -9,8 +9,20 @@
     "make": "electron-forge make",
     "loc-build": "electron-builder"
   },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mamarguerat/eee-annonces.git"
+  },
+  "publish": {
+    "provider": "github",
+    "releaseType": "release"
+  },
   "author": "Martin Marguerat",
-  "license": "Apache-2.0",
+  "license": "GPL-3.0",
+  "bugs": {
+    "url": "https://github.com/mamarguerat/eee-annonces/issues"
+  },
+  "homepage": "https://github.com/mamarguerat/eee-annonces#readme",
   "devDependencies": {
     "@electron-forge/cli": "^7.8.1",
     "@electron-forge/maker-deb": "^7.8.1",
@@ -19,5 +31,25 @@
     "@electron-forge/maker-zip": "^7.8.1",
     "electron": "^37.2.0",
     "electron-builder": "^26.0.12"
+  },
+  
+  "build": {
+    "appId": "ch.martinmarguerat.eee-annonces",
+    "productName": "EEE annonces",
+    "mac": {
+      "category": "public.app-category.utilities"
+    },
+    "dmg": {
+      "icon": false
+    },
+    "linux": {
+      "target": [
+        "AppImage"
+      ],
+      "category": "Utility"
+    },
+    "win": {
+      "publish": "github"
+    }
   }
 }
