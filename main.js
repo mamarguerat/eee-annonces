@@ -12,7 +12,7 @@ function createWindows() {
       contextIsolation: true,
       nodeIntegration: false
     },
-    icon: '/images/icon.png'
+    icon: path.join(__dirname, 'images', 'icon.png')
   })
 
   adminWindow.loadFile('admin.html')
@@ -66,8 +66,8 @@ function createWindows() {
       },
       show: false,
       alwaysOnTop: true,
-      //focusable: false,
-      icon: '/images/icon.png'
+      focusable: false,
+      icon: path.join(__dirname, 'images', 'icon.png')
     })
 
     mainWindow.loadFile('main.html')
