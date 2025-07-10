@@ -1,6 +1,6 @@
 {
   "name": "eee-annonces",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Logiciel permettant de diffuser les annonces lors des culte à l'Eglise Evangélique d'Estavayer",
   "main": "main.js",
   "scripts": {
@@ -32,7 +32,6 @@
     "electron": "^37.2.0",
     "electron-builder": "^26.0.12"
   },
-  
   "build": {
     "appId": "ch.martinmarguerat.eee-annonces",
     "productName": "EEE annonces",
