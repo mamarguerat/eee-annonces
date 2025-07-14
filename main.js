@@ -1,7 +1,81 @@
-const { app, BrowserWindow, ipcMain, screen } = require('electron')
-const path = require('path')
+const { app, BrowserWindow, ipcMain, screen, Menu } = require('electron');
+const join = require('path').join;
+const openAboutWindow = require('about-window').default;
+const path = require('path');
+
+const isMac = process.platform === 'darwin';
 
 let mainWindow, adminWindow;
+
+var menuTemplate = [
+  // { role: 'appMenu' },
+  ...(isMac
+    ? [
+      {
+        label: app.name,
+        submenu: [
+          {
+            label: 'About',
+            click: () => aboutWindow()
+          },
+          { type: 'separator' },
+          { role: 'services' },
+          { type: 'separator' },
+          { role: 'hide' },
+          { role: 'hideOthers' },
+          { role: 'unhide' },
+          { type: 'separator' },
+          { role: 'quit' }
+        ]
+      }
+    ]
+    : []),
+  // { role: 'windowMenu' }
+  {
+    label: 'Window',
+    submenu: [
+      { role: 'minimize' },
+      { role: 'zoom' },
+      ...(isMac
+        ? [
+          { type: 'separator' },
+          { role: 'front' },
+          { type: 'separator' },
+          { role: 'window' }
+        ]
+        : [
+          { role: 'close' }
+        ])
+    ]
+  },
+  ...(app.isPackaged
+    ? []
+    : [{ role: 'viewMenu' }]
+  ),
+  {
+    role: 'help',
+    submenu: [
+      {
+        label: 'A propos',
+        click: () => aboutWindow()
+      },
+      {
+        label: 'An savoir plus',
+        click: async () => {
+          const { shell } = require('electron')
+          await shell.openExternal('https://martinmarguerat.ch')
+        }
+      },
+      {
+        label: 'Rapporter un bug',
+        click: async () => {
+          const { shell } = require('electron')
+          await shell.openExternal('https://github.com/mamarguerat/eee-annonces/issues')
+        }
+      }
+    ]
+  },
+];
 
 function createWindows() {
   adminWindow = new BrowserWindow({
@@ -103,8 +177,46 @@ ipcMain.on('stop-auto-flip', () => {
   if (mainWindow) mainWindow.webContents.send('stop-auto-flip');
 });
 
-app.whenReady().then(createWindows)
+
+const menu = Menu.buildFromTemplate(menuTemplate);
+Menu.setApplicationMenu(menu);
+
+app.whenReady().then(() => {
+  
+  if (!app.isPackaged) {
+    process.env.NODE_ENV = 'development';
+  }
+  createWindows();
+})
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit()
 })
+
+function aboutWindow() {
+  openAboutWindow({
+    icon_path: (
+      process.env.NODE_ENV === 'development'
+        ? 'images/icon.png'
+        : join(process.resourcesPath, 'images', 'icon.png')
+    ),
+    package_json_dir: (
+      process.env.NODE_ENV === 'development'
+        ? join(__dirname, 'images')
+        : process.resourcesPath
+    ),
+    win_options: {
+      parent: adminWindow,
+      modal: true,
+      titleBarStyle: "hidden",
+      movable: false,
+      resizable: false,
+    },
+    css_path: join(__dirname, "style.css"),
+    bug_link_text: "Reporter un bug",
+    product_name: "EEE annonces",
+    show_close_button: "Fermer",
+    adjust_window_size: true,
+    description: "Affichage des annonces",
+  })
+}
