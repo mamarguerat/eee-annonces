@@ -48,7 +48,8 @@
       "category": "Utility"
     },
     "win": {
-      "publish": "github"
+      "publish": "github",
+      "icon": "images/icon.ico"
     }
   }
 }
