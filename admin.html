@@ -295,20 +295,6 @@
       });
     };
 
-    function toggleOnAir() {
-      onAir = !onAir;
-      window.electronAPI.toggleOnAir(onAir);
-      if (onAir) {
-        window.electronAPI.createMainWindow(parseInt(monitorSelect.value, 10));
-        setTimeout(function () {
-          window.electronAPI.goToPage(currentPage);
-        }, 500);
-      }  
-      else {
-        // alert('La présentation a été fermée.');
-      }
-    }
-
     function updateOnAirButton() {
       if (onAir) {
         onAirBtn.textContent = 'On Air';
@@ -391,13 +377,13 @@
     onAirBtn.addEventListener('click', () => {
       onAir = !onAir;
       blackout = false;
-      window.electronAPI.toggleOnAir(onAir);
       if (onAir) {
         window.electronAPI.createMainWindow(parseInt(monitorSelect.value, 10));
         setTimeout(function () {
           window.electronAPI.goToPage(currentPage);
         }, 500);
       }
+      window.electronAPI.toggleOnAir(onAir);
       updateOnAirButton();
       updateBlackoutButton();
     });
